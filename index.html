@@ -193,13 +193,21 @@ async function addConsumption() {
       localStorage.setItem("consumptionData", JSON.stringify(data));
     }
 
-    function resetData() {
-      if (confirm("Voulez-vous vraiment réinitialiser toutes les données ?")) {
-        data = [];
-        localStorage.removeItem("consumptionData");
-        renderTable();
-      }
+    async function resetData() {
+  if (confirm("Voulez-vous vraiment réinitialiser toutes les données ?")) {
+    try {
+      const response = await fetch(`${apiUrl}/consumptions`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Erreur lors de la réinitialisation");
+
+      data = [];
+      renderTable();
+    } catch (error) {
+      alert("Erreur réseau ou serveur : " + error.message);
     }
+  }
+}
+
+
 
     function exportCSV() {
       if (data.length === 0) {
