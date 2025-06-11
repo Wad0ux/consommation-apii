@@ -109,36 +109,61 @@
 
     let data = [];
 
-    // Charger données stockées au chargement
-    window.onload = () => {
-      const saved = localStorage.getItem("consumptionData");
-      if (saved) {
-        data = JSON.parse(saved);
-        renderTable();
-      }
-    };
 
-    function addConsumption() {
-      const client = document.getElementById("clientSelect").value;
-      const product = document.getElementById("productSelect").value;
-      const quantity = parseInt(document.getElementById("quantity").value);
-
-      if (!client || !product || isNaN(quantity) || quantity <= 0) {
-        alert("Sélection non valide camarade !");
-        return;
-      }
-
-      const existing = data.find(entry => entry.client === client && entry.product === product);
-      if (existing) {
-        existing.quantity += quantity;
-      } else {
-        data.push({ client, product, quantity });
-      }
-
-      saveData();
+window.onload = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/consumptions`); // adapte le chemin selon ton API
+    if (!response.ok) throw new Error("Erreur lors du chargement des données");
+    data = await response.json();
+    renderTable();
+  } catch (error) {
+    console.error(error);
+    // fallback localStorage si tu veux
+    const saved = localStorage.getItem("consumptionData");
+    if (saved) {
+      data = JSON.parse(saved);
       renderTable();
-      document.getElementById("quantity").value = "";
     }
+  }
+};
+
+    
+
+
+
+
+async function addConsumption() {
+  const client = document.getElementById("clientSelect").value;
+  const product = document.getElementById("productSelect").value;
+  const quantity = parseInt(document.getElementById("quantity").value);
+
+  if (!client || !product || isNaN(quantity) || quantity <= 0) {
+    alert("Sélection non valide camarade !");
+    return;
+  }
+
+  // On prépare la nouvelle entrée à envoyer
+  const newEntry = { client, product, quantity };
+
+  try {
+    const response = await fetch(`${apiUrl}/consumptions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newEntry),
+    });
+    if (!response.ok) throw new Error("Erreur lors de l'ajout");
+
+    // Récupérer les données mises à jour depuis l'API pour synchro
+    data = await response.json(); // ou refaire un fetch GET selon ton API
+    renderTable();
+    document.getElementById("quantity").value = "";
+  } catch (error) {
+    alert("Erreur réseau ou serveur : " + error.message);
+  }
+}
+
+
+
 
     function renderTable() {
       const table = document.getElementById("consumptionTable");
