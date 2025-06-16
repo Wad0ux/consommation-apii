@@ -36,7 +36,7 @@ app.post("/reset", (req, res) => {
 app.listen(port, () => {
   console.log(`API de consommation lancée sur http://localhost:${port}`);
 });
-*/
+
 
 
 await fetch(`${API_BASE}/add`, {
